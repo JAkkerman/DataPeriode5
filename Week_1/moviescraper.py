@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Name:
-# Student number:
+# Name: Joos Akkerman
+# Student number: 11304723
 """
 This script scrapes IMDB and outputs a CSV file with highest rated movies.
 """
@@ -32,7 +32,39 @@ def extract_movies(dom):
     # NOTE: FOR THIS EXERCISE YOU ARE ALLOWED (BUT NOT REQUIRED) TO IGNORE
     # UNICODE CHARACTERS AND SIMPLY LEAVE THEM OUT OF THE OUTPUT.
 
-    return []   # REPLACE THIS LINE AS WELL IF APPROPRIATE
+    films_info = []
+    for film in dom.find_all('div', class_="lister-item-content"):
+        # title
+        title = film.find('h3', class_='lister-item-header').a.text
+
+        # rating
+        rating = film.find('div', class_='ratings-imdb-rating').strong.text
+
+        # year of release, erase the brackets
+        year_release = film.find('span', class_='lister-item-year').text
+        for c in year_release:
+            if not c.isdigit():
+                year_release = year_release.replace(c, "")
+
+        # actors/actresses
+        actors = []
+        for actor in film.find('p').find_next('p').find_next('p').find_next('a').\
+                        find_next('a').find_next_siblings('a'):
+            actors.append(actor.text)
+        actors = ', '.join(actors)
+
+        # runtime, erase the 'min' addition
+        runtime = film.find('span', class_='runtime').text
+        for c in runtime:
+            if not c.isdigit():
+                runtime = runtime.replace(c, "")
+
+        # print([title, rating, year_release, actors, runtime])
+        film_info = {'title': title, 'rating': rating, 'year_release': year_release,\
+                        'actors': actors, 'runtime': runtime}
+        films_info.append(film_info)
+
+    return films_info
 
 
 def save_csv(outfile, movies):
@@ -42,7 +74,9 @@ def save_csv(outfile, movies):
     writer = csv.writer(outfile)
     writer.writerow(['Title', 'Rating', 'Year', 'Actors', 'Runtime'])
 
-    # ADD SOME CODE OF YOURSELF HERE TO WRITE THE MOVIES TO DISK
+    for film in movies:
+        writer.writerow([film["title"], film["rating"], film["year_release"],\
+                        film["actors"], film["runtime"]])
 
 
 def simple_get(url):
