@@ -32,23 +32,23 @@ def extract_movies(dom):
     # NOTE: FOR THIS EXERCISE YOU ARE ALLOWED (BUT NOT REQUIRED) TO IGNORE
     # UNICODE CHARACTERS AND SIMPLY LEAVE THEM OUT OF THE OUTPUT.
 
-    films_info = []
-    for film in dom.find_all('div', class_="lister-item-content"):
+    movies = []
+    for movie in dom.find_all('div', class_="lister-item-content"):
         # title
-        title = film.find('h3', class_='lister-item-header').a.text
+        title = movie.find('h3', class_='lister-item-header').a.text
 
         # rating
-        rating = film.find('div', class_='ratings-imdb-rating').strong.text
+        rating = movie.find('div', class_='ratings-imdb-rating').strong.text
 
         # year of release, erase the brackets
-        year_release = film.find('span', class_='lister-item-year').text
+        year_release = movie.find('span', class_='lister-item-year').text
         for c in year_release:
             if not c.isdigit():
                 year_release = year_release.replace(c, "")
 
         # actors/actresses
         actors = []
-        texts = film.find_all('p')
+        texts = movie.find_all('p')
         for block in texts:
             actorsraw = block.select("a[href*=st]")
             for actor in actorsraw:
@@ -58,17 +58,17 @@ def extract_movies(dom):
         actors = ', '.join(actors)
 
         # runtime, erase the 'min' addition
-        runtime = film.find('span', class_='runtime').text
+        runtime = movie.find('span', class_='runtime').text
         for c in runtime:
             if not c.isdigit():
                 runtime = runtime.replace(c, "")
 
         # print([title, rating, year_release, actors, runtime])
-        film_info = {'title': title, 'rating': rating, 'year_release': year_release,\
+        movie_info = {'title': title, 'rating': rating, 'year_release': year_release,\
                         'actors': actors, 'runtime': runtime}
-        films_info.append(film_info)
+        movies.append(movie_info)
 
-    return films_info
+    return movies
 
 
 def save_csv(outfile, movies):
@@ -78,9 +78,9 @@ def save_csv(outfile, movies):
     writer = csv.writer(outfile)
     writer.writerow(['Title', 'Rating', 'Year', 'Actors', 'Runtime'])
 
-    for film in movies:
-        writer.writerow([film["title"], film["rating"], film["year_release"],\
-                        film["actors"], film["runtime"]])
+    for movie in movies:
+        writer.writerow([movie["title"], movie["rating"], movie["year_release"],\
+                        movie["actors"], movie["runtime"]])
 
 
 def simple_get(url):
