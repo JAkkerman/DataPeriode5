@@ -35,6 +35,7 @@ for year in data_dict:
     grades.append(data_dict[year])
 
 plt.plot(years, grades)
+plt.ylim([8, 9])
 
 
 if __name__ == "__main__":

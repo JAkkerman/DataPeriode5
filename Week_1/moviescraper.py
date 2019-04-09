@@ -48,9 +48,13 @@ def extract_movies(dom):
 
         # actors/actresses
         actors = []
-        for actor in film.find('p').find_next('p').find_next('p').find_next('a').\
-                        find_next('a').find_next_siblings('a'):
-            actors.append(actor.text)
+        texts = film.find_all('p')
+        for block in texts:
+            actorsraw = block.select("a[href*=st]")
+            for actor in actorsraw:
+                actor = actor.text
+                actors.append(actor)
+
         actors = ', '.join(actors)
 
         # runtime, erase the 'min' addition
