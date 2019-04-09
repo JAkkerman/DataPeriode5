@@ -35,7 +35,10 @@ for year in data_dict:
     grades.append(data_dict[year])
 
 plt.plot(years, grades)
-plt.ylim([8, 9])
+plt.title("Average grade per year in IMDB top 50 graded movies (2008-2018)")
+plt.ylabel("Grade")
+plt.xlabel("Year")
+plt.ylim([0, 10])
 
 
 if __name__ == "__main__":
