@@ -27,17 +27,11 @@ def extract_movies(dom):
     - Runtime (only a number!)
     """
 
-    # ADD YOUR CODE HERE TO EXTRACT THE ABOVE INFORMATION ABOUT THE
-    # HIGHEST RATED MOVIES
-    # NOTE: FOR THIS EXERCISE YOU ARE ALLOWED (BUT NOT REQUIRED) TO IGNORE
-    # UNICODE CHARACTERS AND SIMPLY LEAVE THEM OUT OF THE OUTPUT.
-
     movies = []
+    # acquire the required information from the web page
     for movie in dom.find_all('div', class_="lister-item-content"):
-        # title
+        # title and rating
         title = movie.find('h3', class_='lister-item-header').a.text
-
-        # rating
         rating = movie.find('div', class_='ratings-imdb-rating').strong.text
 
         # year of release, erase the brackets
@@ -52,9 +46,7 @@ def extract_movies(dom):
         for block in texts:
             actorsraw = block.select("a[href*=st]")
             for actor in actorsraw:
-                actor = actor.text
-                actors.append(actor)
-
+                actors.append(actor.text)
         actors = ', '.join(actors)
 
         # runtime, erase the 'min' addition
@@ -63,7 +55,7 @@ def extract_movies(dom):
             if not c.isdigit():
                 runtime = runtime.replace(c, "")
 
-        # print([title, rating, year_release, actors, runtime])
+        # store information on movie in dict and add to movies list
         movie_info = {'title': title, 'rating': rating, 'year_release': year_release,\
                         'actors': actors, 'runtime': runtime}
         movies.append(movie_info)
@@ -75,6 +67,7 @@ def save_csv(outfile, movies):
     """
     Output a CSV file containing highest rated movies.
     """
+
     writer = csv.writer(outfile)
     writer.writerow(['Title', 'Rating', 'Year', 'Actors', 'Runtime'])
 
