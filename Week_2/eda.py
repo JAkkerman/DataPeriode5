@@ -16,7 +16,9 @@ inf_mort = "Infant mortality (per 1000 births)"
 GDP_cap = "GDP ($ per capita) dollars"
 
 def cleandata(datafile):
-    """cleans the relevant data"""
+    """
+    cleans the relevant data
+    """
 
     # open csv file and edit data
     data = pd.read_csv(datafile)
@@ -27,69 +29,58 @@ def cleandata(datafile):
     # select only the relevant columns
     data = data[["Country", "Region", pop_dens, inf_mort, GDP_cap]]
 
-    # clean region data
+    # clean region data (delete excess spaces)
     for value in data["Region"]:
-        data["Region"] = data["Region"].replace(value, " ".join(value.split()))
+        data["Region"] = data["Region"].replace(value, ' '.join(value.split()))
 
     # clean population density data
     data[pop_dens] = data[pop_dens].replace('unknown', np.nan)
     for value in data[pop_dens]:
         data[pop_dens] = data[pop_dens].replace(value, float(str(value).replace(",", ".")))
-    # print(data[pop_dens])
 
     # clean infant mortality data
     for value in data[inf_mort]:
         data[inf_mort] = data[inf_mort].replace(value, float(str(value).replace(",", ".")))
-    # print(data[inf_mort])
 
     # clean GDP per capita data
     data[GDP_cap] = data[GDP_cap].replace('unknown', float(np.nan))
     for value in data[GDP_cap]:
         if type(value) == str:
             data[GDP_cap] = data[GDP_cap].replace(value, int(''.join(i for i in value if i.isdigit())))
-    # print(data[GDP_cap])
 
     return data
 
+
 def getvalues(data):
-    """calculates the mean, median, mode and standard deviation"""
+    """
+    calculates the mean, median, mode and standard deviation
+    """
 
-    # calculate the means
-    # print(data[pop_dens].mean(skipna=True))
-    mean_PopDens = data[pop_dens].mean(skipna=True)
-    # print(data[inf_mort].mean(skipna=True))
-    mean_InfMort = data[inf_mort].mean(skipna=True)
-    # print(data[GDP_cap].mean(skipna=True))
+    # compute the mean, median and mode for GDP per capita and print
     mean_GDPCap = data[GDP_cap].mean(skipna=True)
-
-    # calculate the medians
-    # print(data[pop_dens].median(skipna=True))
-    median_PopDens = data[pop_dens].median(skipna=True)
-    # print(data[inf_mort].median(skipna=True))
-    median_InfMort = data[inf_mort].median(skipna=True)
-    # print(data[GDP_cap].median(skipna=True))
     median_GDPCap = data[GDP_cap].median(skipna=True)
-
-    #calculate the modes
-    # print(data[pop_dens].mode())
-    mode_PopDens = data[pop_dens].mode()
-    # print(data[inf_mort].mode())
-    mode_InfMort = data[inf_mort].mode()
-    # print(data[GDP_cap].mode())
     mode_GDPCap = data[GDP_cap].mode()
+    print(f"Mean of GDP per capita: {mean_GDPCap}")
+    print(f"Median of GDP per capita: {median_GDPCap}")
+    print(f"Mode of GDP per capita: {mode_GDPCap}")
 
-    # calculate the standard deviations
-    print(np.std(data[pop_dens]))
-    # stddev_PopDens = data[pop_dens].std(skipna=True)
-    print(np.std(data[inf_mort]))
-    # median_InfMort = data[inf_mort].median(skipna=True)
-    print(np.std(data[GDP_cap]))
-    # median_GDPCap = data[GDP_cap].median(skipna=True)
+    # compute the five number summary for infant mortality and print
+    infmort_Min = data[inf_mort].min()
+    infmort_FQuin = data[inf_mort].quantile([0.25])
+    infmort_Med = data[inf_mort].median()
+    infmort_TQuin = data[inf_mort].quantile([0.75])
+    infmort_Max = data[inf_mort].max()
+    print(f"Minimum amount of child mortality: {infmort_Min}")
+    print(f"First quartile of child mortality: {infmort_FQuin}")
+    print(f"Median of child mortality: {infmort_Med}")
+    print(f"Third quartile of child mortality: {infmort_TQuin}")
+    print(f"Maximum amount of child mortality: {infmort_Max}")
 
-    return mean_GDPCap
 
 def plotGDP(data):
-    """ plots a histogram showing GDP data """
+    """
+    plots a histogram showing GDP data
+    """
 
     plt.grid()
     plt.hist(data[GDP_cap], bins = 1000)
@@ -100,8 +91,11 @@ def plotGDP(data):
     plt.yticks(range(0, 21))
     plt.show()
 
+
 def plotInfMort(data):
-    """ plots a boxplot showing infant mortality data """
+    """
+    plots a boxplot showing infant mortality data
+    """
 
     boxplot = data.boxplot(column = [inf_mort])
     plt.title("Distribution of Infant Mortality (per 1000 births)")
@@ -109,12 +103,13 @@ def plotInfMort(data):
     plt.xlabel("")
     plt.show()
 
+
 def convert(data):
-    """ sets up datafile in json format """
+    """
+    sets up datafile in json format
+    """
+    data = data.set_index("Country").to_json("data.json", orient='index')
 
-    print(data.set_index('Country').T.to_dict('series'))
-
-    return []
 
 if __name__ == "__main__":
     # clean data to make it usable
