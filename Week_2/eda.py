@@ -21,9 +21,15 @@ def cleandata(datafile):
     # open csv file and edit data
     data = pd.read_csv(datafile)
     data.replace('', np.nan)
-    data.replace(',', '.')
 
     num_catergories = [pop_dens, inf_mort, GDP_cap]
+
+    # select only the relevant columns
+    data = data[["Country", "Region", pop_dens, inf_mort, GDP_cap]]
+
+    # clean region data
+    for value in data["Region"]:
+        data["Region"] = data["Region"].replace(value, " ".join(value.split()))
 
     # clean population density data
     data[pop_dens] = data[pop_dens].replace('unknown', np.nan)
@@ -97,10 +103,18 @@ def plotGDP(data):
 def plotInfMort(data):
     """ plots a boxplot showing infant mortality data """
 
-    print(data[inf_mort])
-    plt.boxplot(data[inf_mort])
+    boxplot = data.boxplot(column = [inf_mort])
+    plt.title("Distribution of Infant Mortality (per 1000 births)")
+    plt.ylabel("Infant Mortality")
+    plt.xlabel("")
     plt.show()
-    # boxplot = data.boxplot(column = [inf_mort])
+
+def convert(data):
+    """ sets up datafile in json format """
+
+    print(data.set_index('Country').T.to_dict('series'))
+
+    return []
 
 if __name__ == "__main__":
     # clean data to make it usable
@@ -114,3 +128,6 @@ if __name__ == "__main__":
 
     # plot a boxplot analyzing infant mortality data
     plotInfMort(CLEANED_DATA)
+
+    # convert to json file
+    convert(CLEANED_DATA)
