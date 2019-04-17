@@ -93,7 +93,6 @@ def plotInfMort(data):
     data.boxplot(column = [inf_mort])
     plt.title("Distribution of Infant Mortality (per 1000 births)")
     plt.ylabel("Infant Mortality")
-
     plt.show()
 
     # plots boxplot of infant mortality per region
@@ -102,7 +101,6 @@ def plotInfMort(data):
     plt.xticks(rotation=80)
     plt.title("Distribution of Infant Mortality (per 1000 births) per region")
     plt.ylabel("Infant Mortality")
-
     plt.show()
 
 
