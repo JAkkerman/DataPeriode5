@@ -5,13 +5,13 @@
 This script converts data obtained from a .csv file to JSON format
 """
 
-import pandas as pd
 import json
 import numpy as np
 import csv
 
-INPUT_CSV = r"C:\Users\juliu\OneDrive\Documenten\GitHub\DataPeriode5\Week_3\worldbank_GDPdata.csv"
-# INPUT_CSV = "worldbank_GDPdata.csv"
+# INPUT_CSV = r"C:\Users\juliu\OneDrive\Documenten\GitHub\DataPeriode5\Week_3\worldbank_GDPdata.csv"
+INPUT_CSV = "worldbank_GDPdata.csv"
+# OUTPUT_JSON = r"C:\Users\juliu\OneDrive\Documenten\GitHub\DataPeriode5\Week_3\worldbank_GDPdata.json"
 OUTPUT_JSON = "worldbank_GDPdata.json"
 INDEX = "year"
 ORIENT = "Country Name"
@@ -27,7 +27,6 @@ def clean(input, sel_rows):
         for country in sel_rows:
             if row['Country Name'] == country:
                 data.append(row)
-    # print(data)
 
     return data
 
@@ -36,9 +35,17 @@ def convert(data, index, orient, outputJSON):
     """
     Converts selected data to JSON format
     """
-    for country in data:
-        json.dump(country, outputJSON)
-        outputJSON.write('\n')
+
+    with open(outputJSON, 'w') as output:
+        output.write('[')
+        commas = len(data)
+        for entry in data:
+            print(entry)
+            output.write(json.dumps(entry))
+            if commas > 1:
+                output.write(',')
+            commas = commas - 1
+        output.write(']')
 
 
 if __name__ == '__main__':
