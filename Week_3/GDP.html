@@ -5,78 +5,107 @@
 <html>
   <head>
     <title>
-      GDP graph
+      Japan GDP graph
     </title>
   </head>
 
   <body>
 
-    <canvas id="graph" width="600" height="500"></canvas>
+    <canvas id="graph" width="650" height="500"></canvas>
 
     <script>
-      const domain = [1960, 2018]
-      const range = [44307342950.4, 4872136945507.59]
+
+      const maxGDP = 70*1.0e+11
+      const startyear = 1960
+      const endyear = 2018
 
       var fileName = "worldbank_GDPdata.json";
       var txtFile = new XMLHttpRequest();
       txtFile.onreadystatechange = function() {
           if (txtFile.readyState === 4 && txtFile.status == 200) {
               console.log(JSON.parse(txtFile.responseText));
-
-              data = JSON.parse(txtFile.responseText)[0]
-
+              data = JSON.parse(txtFile.responseText)
+              draw(data)
           }
-          txtFile.open("GET", fileName);
-          txtFile.send();
         };
+        txtFile.open("GET", fileName);
+        txtFile.send();
 
-      const canvas = document.getElementById('graph');
-      const ctx = canvas.getContext('2d');
-      // Set line width
-      ctx.lineWidth = 1.5;
+      function draw(data){
+      // this function draws the graph
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        // Set line width
+        ctx.lineWidth = 1.5;
 
-      // Render graph format
-      ctx.moveTo(50, 50);
-      ctx.lineTo(50, 400);
-      ctx.lineTo(600, 400);
-      ctx.stroke();
+        // Render graph format
+        ctx.moveTo(90, 50);
+        ctx.lineTo(90, 400);
+        ctx.lineTo(600, 400);
+        ctx.stroke();
 
-      ctx.font = '20px serif'
-      ctx.fillText('GDP Data for Japan (1960-2018)', 170, 25);
+        ctx.font = '20px serif'
+        ctx.fillText('GDP Data for Japan (1960-2018)', 220, 25);
 
-      ctx.font = '16px serif'
-      ctx.fillText('Years', 270, 450)
+        ctx.font = '16px serif'
+        ctx.fillText('Years', 320, 450);
 
-      ctx.font = '16px serif'
-      // ctx.rotate(-0.5*Math.PI)
-      ctx.fillText('GDP (in 2018 US$)', 15, 215)
+        ctx.font = '16px serif'
+        // ctx.rotate(-0.5*Math.PI);
+        ctx.fillText('GDP in 2018 US$ (billions) ', 15, 215);
+        // ctx.rotate(0.5*Math.PI);
 
-      console.log(createTransform(domain, range))
-
-      function createTransform(domain, range){
-      	// domain is a two-element array of the data bounds [domain_min, domain_max]
-      	// range is a two-element array of the screen bounds [range_min, range_max]
-      	// this gives you two equations to solve:
-      	// range_min = alpha * domain_min + beta
-      	// range_max = alpha * domain_max + beta
-       		// a solution would be:
-
-          var domain_min = domain[0]
-          var domain_max = domain[1]
-          var range_min = range[0]
-          var range_max = range[1]
-
-          // formulas to calculate the alpha and the beta
-         	var alpha = (range_max - range_min) / (domain_max - domain_min)
-          var beta = range_max - alpha * domain_max
-
-          console.log(alpha)
-          console.log(beta)
-
-          // returns the function for the linear transformation (y= a * x + b)
-          return function(x){
-            return alpha * x + beta;
+        // draw the line in the graph
+        for (i = startyear; i < 2019; i++) {
+          if (i == startyear){
+            ctx.moveTo(xvalue(i), yvalue(i));
           }
+          else {
+            ctx.lineTo(xvalue(i), yvalue(i));
+          }
+        }
+        ctx.stroke();
+
+        // change the style of the grid lines
+        ctx.lineWidth = 0.5
+
+        // draw the graph line indicators, first the y axis, then the x axis
+        for (i = 50; i <= 400; i = i + (350/7)){
+          ctx.font = '12px serif'
+          ctx.fillText(tobillions(i), 55, i + 3);
+          ctx.moveTo(85, i);
+          ctx.lineTo(95, i);
+          ctx.lineTo(600, i)
+        }
+
+        for (i = 90; i <= 600; i = i + (600/11)){
+          ctx.font = '12px serif'
+          ctx.fillText(toyear(i), i - 10, 425);
+          ctx.moveTo(i, 395);
+          ctx.lineTo(i, 405);
+        }
+
+        ctx.stroke()
+      }
+
+      function xvalue(i) {
+        // converts datapoint into an x-coordinate
+        return (i - startyear)/(endyear - startyear)*510 + 90
+      }
+
+      function yvalue(i) {
+        // converts datapoint into an y-coordinate
+        return (maxGDP - data[i]) / maxGDP * 350 + 50
+      }
+
+      function toyear(i) {
+        // returns year value beloning with an x-coordinate
+        return parseInt(1960 + (endyear - startyear)*((i-50)/550))
+      }
+
+      function tobillions(i) {
+        // returns a GDP count belonging with a y-coordinate
+        return parseInt((maxGDP - maxGDP*(i-50)/350)/1.0e+9)
       }
 
     </script>
