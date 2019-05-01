@@ -15,19 +15,20 @@
 
     <script>
 
-      const maxGDP = 70*1.0e+11
-      const startyear = 1960
-      const endyear = 2018
+      const maxGDP = 70*1.0e+11;
+      const startyear = 1960;
+      const endyear = 2018;
 
       var fileName = "worldbank_GDPdata.json";
       var txtFile = new XMLHttpRequest();
       txtFile.onreadystatechange = function() {
           if (txtFile.readyState === 4 && txtFile.status == 200) {
               console.log(JSON.parse(txtFile.responseText));
-              data = JSON.parse(txtFile.responseText)
-              draw(data)
+              data = JSON.parse(txtFile.responseText);
+              draw(data);
           }
         };
+
         txtFile.open("GET", fileName);
         txtFile.send();
 
@@ -35,27 +36,24 @@
       // this function draws the graph
         const canvas = document.getElementById('graph');
         const ctx = canvas.getContext('2d');
-        // Set line width
-        ctx.lineWidth = 1.5;
+
+        // draw the Japanese sun
+        ctx.beginPath();
+        ctx.arc(350, 230, 90, 0, 2 * Math.PI);
+        ctx.fillStyle = "#ff0000";
+        ctx.fill();
 
         // Render graph format
+        ctx.beginPath();
+        ctx.fillStyle = "#000000";
+        ctx.lineWidth = 1.5;
         ctx.moveTo(90, 50);
         ctx.lineTo(90, 400);
         ctx.lineTo(600, 400);
         ctx.stroke();
 
-        ctx.font = '20px serif'
-        ctx.fillText('GDP Data for Japan (1960-2018)', 220, 25);
-
-        ctx.font = '16px serif'
-        ctx.fillText('Years', 320, 450);
-
-        ctx.font = '16px serif'
-        // ctx.rotate(-0.5*Math.PI);
-        ctx.fillText('GDP in 2018 US$ (billions) ', 15, 215);
-        // ctx.rotate(0.5*Math.PI);
-
         // draw the line in the graph
+        ctx.beginPath();
         for (i = startyear; i < 2019; i++) {
           if (i == startyear){
             ctx.moveTo(xvalue(i), yvalue(i));
@@ -63,49 +61,65 @@
           else {
             ctx.lineTo(xvalue(i), yvalue(i));
           }
-        }
+        };
         ctx.stroke();
 
-        // change the style of the grid lines
-        ctx.lineWidth = 0.5
-
         // draw the graph line indicators, first the y axis, then the x axis
+        ctx.beginPath();
+        ctx.lineWidth = 0.5;
+
         for (i = 50; i <= 400; i = i + (350/7)){
-          ctx.font = '12px serif'
+          ctx.font = '12px serif';
           ctx.fillText(tobillions(i), 55, i + 3);
           ctx.moveTo(85, i);
           ctx.lineTo(95, i);
           ctx.lineTo(600, i)
         }
-
         for (i = 90; i <= 600; i = i + (600/11)){
-          ctx.font = '12px serif'
+          ctx.font = '12px serif';
           ctx.fillText(toyear(i), i - 10, 425);
           ctx.moveTo(i, 395);
           ctx.lineTo(i, 405);
-        }
+        };
+        ctx.stroke();
+
+
+        // add title
+        ctx.font = '20px serif';
+        ctx.fillText('GDP Data for Japan (1960-2018)', 220, 25);
+
+        // add x-axis title
+        ctx.font = '16px serif';
+        ctx.fillText('Years', 320, 450);
+
+        // add y-axis title
+        ctx.font = '16px serif';
+        ctx.save();
+        ctx.rotate(1.5*Math.PI);
+        ctx.fillText('GDP in 2018 US$ (billions) ', -300, 30);
+        ctx.restore();
 
         ctx.stroke()
       }
 
       function xvalue(i) {
         // converts datapoint into an x-coordinate
-        return (i - startyear)/(endyear - startyear)*510 + 90
+        return (i - startyear)/(endyear - startyear)*510 + 90;
       }
 
       function yvalue(i) {
         // converts datapoint into an y-coordinate
-        return (maxGDP - data[i]) / maxGDP * 350 + 50
+        return (maxGDP - data[i]) / maxGDP * 350 + 50;
       }
 
       function toyear(i) {
         // returns year value beloning with an x-coordinate
-        return parseInt(1960 + (endyear - startyear)*((i-50)/550))
+        return parseInt(1960 + (endyear - startyear)*((i-90)/510));
       }
 
       function tobillions(i) {
         // returns a GDP count belonging with a y-coordinate
-        return parseInt((maxGDP - maxGDP*(i-50)/350)/1.0e+9)
+        return parseInt((maxGDP - maxGDP*(i-50)/350)/1.0e+9);
       }
 
     </script>

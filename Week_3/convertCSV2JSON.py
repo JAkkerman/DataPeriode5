@@ -6,31 +6,29 @@ This script converts data obtained from a .csv file to JSON format
 """
 
 import json
-import numpy as np
-import csv
 import pandas as pd
 
 INPUT_CSV = "worldbank_GDPdata.csv"
 OUTPUT_JSON = "worldbank_GDPdata.json"
-INDEX = "year"
-ORIENT = "Country Name"
-SELECTED_ROWS = "Japan"
+SELECTED_ROW = 117
+FIRSTCOLUMN = 1960
+LASTCOLUMN = 2018
 
-def clean(input):
+
+def clean(input, selected_row, firstcolumn, lastcolumn):
     """
-    Reads the csv file and collects the needed data
+    Reads the csv file and returns the requested data
     """
 
     input = pd.read_csv(INPUT_CSV)
     data = {}
-    for i in range(1960, 2018):
-        data[str(i)] = input.loc[117, str(i)]
-    print(data)
+    for i in range(firstcolumn, lastcolumn):
+        data[str(i)] = input.loc[selected_row, str(i)]
 
     return data
 
 
-def convert(data, index, orient, outputJSON):
+def convert(data, outputJSON):
     """
     Converts selected data to JSON format
     """
@@ -41,7 +39,7 @@ def convert(data, index, orient, outputJSON):
 
 if __name__ == '__main__':
     # read data from data file
-    data = clean(INPUT_CSV)
+    data = clean(INPUT_CSV, SELECTED_ROW, FIRSTCOLUMN, LASTCOLUMN)
 
     # convert data to JSON format
-    convert(data, INDEX, ORIENT, OUTPUT_JSON)
+    convert(data, OUTPUT_JSON)
