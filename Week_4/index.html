@@ -30,7 +30,7 @@ produced by OECD member countries -->
 
     <!-- This is where your bar chart will go -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
     <script type="text/javascript">
 
         d3.json("data.json").then(function(data) {
@@ -62,12 +62,12 @@ produced by OECD member countries -->
 
               var yAxis = d3.axisLeft(yScale);
 
-              var tip = d3.tip()
-              .attr('class', 'd3-tip')
-              .offset([-10, 0])
-              .html(function(d) {
-                return "<strong>Frequency:</strong> <span style='color:red'>" + d.frequency + "</span>";
-              })
+              // var tip = d3.tip()
+              // .attr('class', 'd3-tip')
+              // .offset([-10, 0])
+              // .html(function(d) {
+              //   return "<strong>Frequency:</strong> <span style='color:red'>" + d.frequency + "</span>";
+              // })
 
               svg.selectAll("rect")
                 .data(data)
