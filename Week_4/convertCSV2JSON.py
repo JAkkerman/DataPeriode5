@@ -10,7 +10,7 @@ import pandas as pd
 
 INPUT_CSV = "data.csv"
 OUTPUT_JSON = "data.json"
-SELECTED_ROWS = [2222, 2279, 2450, 2564, 2621, 2792, 3305, 3419, 3818, 3191]
+SELECTED_ROWS = [2222, 2336, 2507, 2678, 2735, 2849, 2906, 2393, 2279, 2450, 2564, 2621, 2792, 3305, 3419, 3818, 3191]
 FIRSTCOLUMN = 1
 LASTCOLUMN = 6
 
@@ -21,6 +21,7 @@ def clean(input, selected_rows, firstcolumn, lastcolumn):
     """
 
     input = pd.read_csv(INPUT_CSV)
+    # input = input.sort_values("Value")
     data = []
     id = 1
     subdata = {}
@@ -28,11 +29,28 @@ def clean(input, selected_rows, firstcolumn, lastcolumn):
 
         subdata = {"LOCATION": input.loc[selected_row, "LOCATION"],
                         "%RENEW": input.loc[selected_row, "Value"].item()}
-        # subdata["LOCATION"] = input.loc[selected_row, "LOCATION"]
-        # subdata["%RENEW"] = input.loc[selected_row, "Value"].item()
         id = id + 1
-
         data.append(subdata)
+
+    return data
+
+def sort(data):
+    """
+    Sorts data from low to heigh
+    """
+
+    lendata = len(data)
+
+    for i in range(lendata):
+        for j in range(0, lendata-i-1):
+
+            if data[j]["%RENEW"] > data[j+1]["%RENEW"]:
+                data[j], data[j+1] = data[j+1], data[j]
+
+    # countries = []
+    # for country in data:
+    #     countries.append(country["LOCATION"])
+    # print(countries)
 
     return data
 
@@ -49,6 +67,9 @@ def convert(data, outputJSON):
 if __name__ == '__main__':
     # read data from data file
     data = clean(INPUT_CSV, SELECTED_ROWS, FIRSTCOLUMN, LASTCOLUMN)
+
+    # sort data (low to high value)
+    data = sort(data)
 
     # convert data to JSON format
     convert(data, OUTPUT_JSON)
