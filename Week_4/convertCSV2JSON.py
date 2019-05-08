@@ -21,36 +21,26 @@ def clean(input, selected_rows, firstcolumn, lastcolumn):
     """
 
     input = pd.read_csv(INPUT_CSV)
-    # input = input.sort_values("Value")
     data = []
-    id = 1
-    subdata = {}
     for selected_row in selected_rows:
 
         subdata = {"LOCATION": input.loc[selected_row, "LOCATION"],
                         "%RENEW": input.loc[selected_row, "Value"].item()}
-        id = id + 1
         data.append(subdata)
 
     return data
 
 def sort(data):
     """
-    Sorts data from low to heigh
+    Sorts data from low to high, using bubble sort
     """
 
     lendata = len(data)
 
     for i in range(lendata):
         for j in range(0, lendata-i-1):
-
             if data[j]["%RENEW"] > data[j+1]["%RENEW"]:
                 data[j], data[j+1] = data[j+1], data[j]
-
-    # countries = []
-    # for country in data:
-    #     countries.append(country["LOCATION"])
-    # print(countries)
 
     return data
 

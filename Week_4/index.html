@@ -4,14 +4,11 @@ produced by OECD member countries -->
 
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>OECD Barchart</title>
-  </head>
 
   <style>
 
 			.bar:hover {
-				fill: #0ba828;
+				fill: rgb(45, 102, 38)
 			}
 
       .d3-tip {
@@ -27,11 +24,6 @@ produced by OECD member countries -->
   </style>
 
   <body>
-    <p><b>OECD data on renewable energy</b></p>
-    <p><i>This barchart shows the percentage of the total electricity
-          production that comes from renewable sources.</i></p>
-    <p>Joos Akkerman (11304723) | Data visualization periode 5</p>
-
 
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
@@ -39,41 +31,68 @@ produced by OECD member countries -->
 
     <script type="text/javascript">
 
+        // write the header title
+        d3.select("head")
+          .append("title")
+          .text("OECD RENEW Barchart");
+
+        // write the title, description and personal information
+        d3.select("body")
+          .append("b")
+          .attr("font-weight", "bold")
+          .text("OECD data on renewable energy");
+
+        d3.select("body")
+          .append("i")
+          .attr("font-style", "italic")
+          .text("This barchart shows the percentage of the total electricity production that comes from renewable sources.");
+
+        d3.select("body")
+          .append("p")
+          .attr("font-weight", "bold")
+          .text("Joos Akkerman (11304723) | Data visualization periode 5");
+
+        // load in data and start drawing
         d3.json("data.json").then(function(data) {
 
-          d3.select("body").selectAll("div")
+          d3.select("body").selectAll("div");
 
+              // set properties of graph, scalable to w (width) and h (height)
               var w = 750;
-              var h = 300;
-              var start_w = 30;
+              var h = 350;
+              var start_w = 60;
               var end_w = 0.9*w;
               var start_h = 10;
-              var end_h = 0.9*h;
+              var end_h = 0.85*h;
               var barPadding = 2;
               var svg = d3.select("body")
                 .append("svg")
                 .attr("width", w)
                 .attr("height", h);
 
+              // sets the country names on the x-axis
               var xScale = d3.scaleBand()
                              .domain(['NLD', 'BEL', 'USA', 'IRL', 'FRA', 'CZE', 'HUN', 'GRC', 'DEU', 'ITA', 'CAN', 'PRT', 'DNK', 'AUT', 'FIN', 'NOR', 'ISL'])
                              .range([start_w, end_w]);
 
+              // sets the scale for the y-axis
               var yScale = d3.scaleLinear()
                              .domain([100, 0])
-                             .range([start_h, end_h - 10]);
+                             .range([start_h, end_h - start_h]);
 
+              // initiate x-axis and y-axis
               var xAxis = d3.axisBottom(xScale);
-
               var yAxis = d3.axisLeft(yScale);
 
+              // initiate tip, which shows the percentage of renewable energy
               var tip = d3.tip()
                 .attr('class', 'd3-tip')
                 .offset([-10, 0])
                 .html(function(d) {
                   return "<strong>Renewable Energy: </strong>" + d["%RENEW"] + "%</span>";
-              })
+              });
 
+              // draw the bars
               svg.selectAll("rect")
                 .data(data)
                 .enter()
@@ -81,14 +100,14 @@ produced by OECD member countries -->
                 .attr("class", "bar")
                 .attr("y", function(d) {
                     console.log(yScale(d["%RENEW"]))
-                    return h + start_h - (h + start_h - yScale(d["%RENEW"])) + 10;
+                    return start_h + yScale(d["%RENEW"]);
                   })
-                .attr("width", (w - start_w - (w - end_w)) / data.length - barPadding)
+                .attr("width", (end_w - start_w) / data.length - barPadding)
                 .attr("height", function(d) {
-                    return (h - start_h) - yScale(d["%RENEW"]) - (h - end_h);
+                    return end_h - start_h - yScale(d["%RENEW"]);
                   })
                 .attr("x", function(d, i) {
-                    return start_w + i * ((w - start_w - (w - end_w)) / data.length);
+                    return start_w + i * ((end_w - start_w) / data.length);
                   })
                 .attr("fill", function(d) {
                     if (d["%RENEW"] > 70) {
@@ -112,6 +131,7 @@ produced by OECD member countries -->
 
               svg.call(tip);
 
+              // draw both axes
               svg.append("g")
                  .attr("transform", "translate(0, "+ end_h +")")
                  .call(xAxis);
@@ -120,10 +140,25 @@ produced by OECD member countries -->
                  .attr("transform", "translate("+ start_w +", "+ start_h +")")
                  .call(yAxis);
 
+              // set axis titles
+              svg.append("text")
+                 .attr("x", w/2 - start_w)
+                 .attr("y", h)
+                 .text("Countries");
+
+              svg.append("text")
+                 .attr("x", -end_h/2)
+                 .attr("y", start_w/2)
+                 .attr("text-anchor", "middle")
+                 .attr("transform", "rotate(-90)")
+                 .text("Percentage renewable energy");
+
             });
 
     </script>
 
+    <a href="https://data.oecd.org/energy/renewable-energy.htm">OECD DATA</a>
+    
   </body>
 
 </html>
