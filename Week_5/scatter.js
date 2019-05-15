@@ -8,17 +8,18 @@ var dataGDP = "https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+
 var requests = [d3.json(teensInViolentArea), d3.json(teenPregnancies), d3.json(dataGDP)];
 
 // set properties for the graph
-var w = 750;
-var h = 350;
+var w = 900;
+var h = 550;
 var start_w = 60;
 var end_w = 0.9*w;
 var start_h = 10;
 var end_h = 0.85*h;
+var end_y = 50
+var end_x = 35
 var barPadding = 2;
-var data = []
 var startyear = 2012
 var endyear = 2015
-var year = 2015
+var year = 2012
 
 window.onload = function() {
 
@@ -34,7 +35,7 @@ window.onload = function() {
     scales = scale(start_w, end_w, start_h, end_h)
     console.log(scales[0])
     console.log(scales[1])
-    drawScatter(converted_data, scales[0], scales[1], year)
+    drawScatter(converted_data, scales[0], scales[1], scales[2], year)
 
   }).catch(function(e){
       throw(e);
@@ -51,42 +52,43 @@ function convert(teenViolentData, teenPregData, dataGDP) {
     converted_data[i] = []
 
     for (var country in teenViolentData) {
-
-      // parse teen violence data
-      var teenViol = 0
-      teenViolentData[country].forEach(function(d) {
-        if (d['Time'] == i) {
-          teenViol = d['Datapoint']
-        }
-      })
-
-      // parse teen pregnancy data
-      var teenPreg = 0
-      if (country in teenPregData) {
-        teenPregData[country].forEach(function(d) {
+      if (country != 'OECD - Average') {
+        // parse teen violence data
+        var teenViol = 0
+        teenViolentData[country].forEach(function(d) {
           if (d['Time'] == i) {
-            teenPreg = d['Datapoint']
+            teenViol = d['Datapoint']
           }
         })
-      }
 
-      // parse GDP data
-      var gdp = 0
-      if (country in dataGDP) {
-        dataGDP[country].forEach(function(d) {
-          if (d['Year'] == i) {
-            gdp = d['Datapoint']
-          }
+        // parse teen pregnancy data
+        var teenPreg = 0
+        if (country in teenPregData) {
+          teenPregData[country].forEach(function(d) {
+            if (d['Time'] == i) {
+              teenPreg = d['Datapoint']
+            }
+          })
+        }
+
+        // parse GDP data
+        var gdp = 0
+        if (country in dataGDP) {
+          dataGDP[country].forEach(function(d) {
+            if (d['Year'] == i) {
+              gdp = d['Datapoint']
+            }
+          })
+        }
+
+        // put data into dictionary
+        converted_data[i].push({
+          'Country': country,
+          'teenViol': teenViol,
+          'teenPreg': teenPreg,
+          'gdp': gdp
         })
       }
-
-      // put data into dictionary
-      converted_data[i].push({
-        'Country': country,
-        'teenViol': teenViol,
-        'teenPreg': teenPreg,
-        'gdp': gdp
-      })
     }
   }
   return converted_data
@@ -238,19 +240,23 @@ function transformResponseGDP(data){
 function scale(start_w, end_w, start_h, end_h) {
   // sets the scale for the x-axis
   var xScale = d3.scaleLinear()
-                 .domain([0, 100])
+                 .domain([0, end_x])
                  .range([start_w, end_w]);
 
   // sets the scale for the y-axis
   var yScale = d3.scaleLinear()
-                 .domain([100, 0])
+                 .domain([end_y, 0])
                  .range([start_h, end_h - start_h]);
 
-  return [xScale, yScale]
+  var colorScale = d3.scaleOrdinal()
+                     .domain([20000, 110000])
+                     .range(['rgb(2, 0, 86)', 'rgb(153, 0, 86)','rgb(255, 0, 0)']);
+
+  return [xScale, yScale, colorScale]
 }
 
 
-function drawScatter(data, xScale, yScale, year) {
+function drawScatter(data, xScale, yScale, colorScale, year) {
 
   // initiate the axes
   var xAxis = d3.axisBottom(xScale);
@@ -271,18 +277,52 @@ function drawScatter(data, xScale, yScale, year) {
      .attr("transform", "translate("+ start_w +", "+ start_h +")")
      .call(yAxis);
 
-  console.log(xScale)
+   // Create a dropdown
+   var dropDown = d3.select("#fruitDropdown")
+
+   svg.append("select")
+      .selectAll("option")
+      .data(data)
+      .enter()
+      .append("option")
+      .attr("x", 10)
+      .attr("y", 10)
+      .attr("value", function(d){
+          return d.key;
+      })
+      .text(function(d){
+          return d.key;
+      })
+
+
+    var tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([-10, 0])
+      .html(function(d) {
+        // console.log(d["Country"])
+        return "<strong>" + d["Country"] + "</strong>, GDP: " + d["gdp"];
+        // return "<strong>Country: </strong>" + d.key + "%</span>";
+    });
+
+    svg.call(tip);
 
   // draw the data points
    svg.selectAll("circle")
     .data(data[year])
     .enter()
     .append("circle")
+    .attr("class", "dot")
     .attr("cx", function (d) {
       return xScale(d['teenViol'])
     })
     .attr("cy", function(d) {
       return yScale(d['teenPreg']);
     })
-    .attr("r", 5);
+    .attr("r", 5)
+    .attr('fill', function(d) {
+      return colorScale(d['gdp'])
+    })
+    .on('mouseover', tip.show)
+    .on('mouseout', tip.hide);
+
 }

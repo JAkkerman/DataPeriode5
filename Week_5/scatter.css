@@ -1,6 +1,16 @@
 /* Joos Akkerman (11304723)
 Data Processing Week 5  */
 
-.test{
-  color: red;
+.dot:hover {
+  fill: rgb(227, 177, 21);
+}
+
+.d3-tip {
+  line-height: 1;
+  padding: 12px;
+  background: rgb(86, 1, 237);
+  color: #fff;
+  border-radius: 1px;
+  font-family: arial;
+  font-size: 12px;
 }
