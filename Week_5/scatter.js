@@ -343,7 +343,7 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
      .text("Teen pregnancy (%)");
 
   // make legend
-  var categories = ['< 20000', '20000-30000', '30000-40000', '30000-45000', '45000 >'];
+  var categories = ['< 20000', '20000-30000', '30000-45000', '45000 >'];
   var leg_y = 130;
 
   for (i = 0; i < 4; i++) {
