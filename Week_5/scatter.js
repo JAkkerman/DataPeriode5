@@ -12,7 +12,7 @@ var w = 900;
 var h = 550;
 var start_w = 60;
 var end_w = 0.9*w;
-var start_h = 10;
+var start_h = 30;
 var end_h = 0.85*h;
 var end_y = 50
 var end_x = 35
@@ -248,13 +248,18 @@ function scale(start_w, end_w, start_h, end_h) {
                  .domain([end_y, 0])
                  .range([start_h, end_h - start_h]);
 
-  var colorScale = d3.scaleOrdinal()
-                     .domain([20000, 110000])
-                     .range(['rgb(2, 0, 86)', 'rgb(153, 0, 86)','rgb(255, 0, 0)']);
+  var colorScale = d3.scaleThreshold()
+  // var colorScale = d3.scaleOrdinal()
+                     .domain([10000, 25000, 40000, 50000])
+                     .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+                     // .interpolator(d3.interpolateCubehelixDefault)
 
   return [xScale, yScale, colorScale]
 }
 
+function myFunction(){
+  console.log("YEEEEEEt")
+}
 
 function drawScatter(data, xScale, yScale, colorScale, year) {
 
@@ -281,12 +286,12 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
    var dropDown = d3.select("#fruitDropdown")
 
    svg.append("select")
+      .attr("x", 10)
+      .attr("y", 10)
       .selectAll("option")
       .data(data)
       .enter()
       .append("option")
-      .attr("x", 10)
-      .attr("y", 10)
       .attr("value", function(d){
           return d.key;
       })
@@ -300,7 +305,7 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
       .offset([-10, 0])
       .html(function(d) {
         // console.log(d["Country"])
-        return "<strong>" + d["Country"] + "</strong>, GDP: " + d["gdp"];
+        return "<strong>" + d["Country"] + "</strong>, GDP: $" + Math.round(d["gdp"]);
         // return "<strong>Country: </strong>" + d.key + "%</span>";
     });
 
@@ -324,5 +329,37 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
     })
     .on('mouseover', tip.show)
     .on('mouseout', tip.hide);
+
+    // set graph and axis titles
+    svg.append("text")
+       .attr("x", w/5)
+       .attr("y", start_h)
+       .attr("font-weight", "bold")
+       .text("Teens experiencing violence and teen pregnancies in OECD countries");
+
+    svg.append("text")
+       .attr("x", w/2 - 2*start_w)
+       .attr("y", h - start_h)
+       .text("Teens that experience violence (%)");
+
+    svg.append("text")
+       .attr("x", -end_h/2)
+       .attr("y", start_w/2)
+       .attr("text-anchor", "middle")
+       .attr("transform", "rotate(-90)")
+       .text("Teen pregnancy (%)");
+
+       var colorLegend = d3.legend.color()
+               .labelFormat(d3.format(".0f"))
+               .scale(colorScale)
+               .shapePadding(5)
+               .shapeWidth(50)
+               .shapeHeight(20)
+               .labelOffset(12);
+
+             svg.append("g")
+               .attr("transform", "translate(352, 60)")
+               .call(colorLegend);
+
 
 }
