@@ -14,28 +14,37 @@ var start_w = 60;
 var end_w = 0.9*w;
 var start_h = 30;
 var end_h = 0.85*h;
-var end_y = 50
-var end_x = 35
+var end_y = 50;
+var end_x = 35;
 var barPadding = 2;
-var startyear = 2012
-var endyear = 2015
-var year = 2012
+var startyear = 2012;
+var endyear = 2015;
+var year = 2012;
 
 window.onload = function() {
 
   Promise.all(requests).then(function(response) {
 
-    var teenViolentData = transformResponse(response[0])
-    var teenPregData = transformResponse(response[1])
-    var dataGDP = transformResponseGDP(response[2])
+    var teenViolentData = transformResponse(response[0]);
+    var teenPregData = transformResponse(response[1]);
+    var dataGDP = transformResponseGDP(response[2]);
 
-    converted_data = convert(teenViolentData, teenPregData, dataGDP)
-    console.log(converted_data)
+    converted_data = convert(teenViolentData, teenPregData, dataGDP);
 
-    scales = scale(start_w, end_w, start_h, end_h)
-    console.log(scales[0])
-    console.log(scales[1])
-    drawScatter(converted_data, scales[0], scales[1], scales[2], year)
+    scales = scale(start_w, end_w, start_h, end_h);
+    drawScatter(converted_data, scales[0], scales[1], scales[2], year);
+
+    // call on drawScatter function with selected year for data
+      // document.getElementById("2013").onclick = function() {
+      //   console.log('Yeet')
+      //   d3.selectAll("svg").remove()
+      //   drawScatter(converted_data, scales[0], scales[1], scales[2], 2013);
+      // };
+
+      document.getElementById("Year").onclick = function() {
+        d3.selectAll("svg").remove()
+        drawScatter(converted_data, scales[0], scales[1], scales[2], document.getElementById("Year").value);
+      };
 
   }).catch(function(e){
       throw(e);
@@ -249,10 +258,8 @@ function scale(start_w, end_w, start_h, end_h) {
                  .range([start_h, end_h - start_h]);
 
   var colorScale = d3.scaleThreshold()
-  // var colorScale = d3.scaleOrdinal()
                      .domain([10000, 25000, 40000, 50000])
                      .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
-                     // .interpolator(d3.interpolateCubehelixDefault)
 
   return [xScale, yScale, colorScale]
 }
@@ -271,7 +278,7 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
   var svg = d3.select("body")
               .append("svg")
               .attr("width", w)
-              .attr("height", h)
+              .attr("height", h);
 
   // draw both axes
   svg.append("g")
@@ -283,7 +290,7 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
      .call(yAxis);
 
    // Create a dropdown
-   var dropDown = d3.select("#fruitDropdown")
+   var dropDown = d3.select("#fruitDropdown");
 
    svg.append("select")
       .attr("x", 10)
@@ -297,17 +304,15 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
       })
       .text(function(d){
           return d.key;
-      })
+      });
 
 
     var tip = d3.tip()
       .attr('class', 'd3-tip')
       .offset([-10, 0])
       .html(function(d) {
-        // console.log(d["Country"])
         return "<strong>" + d["Country"] + "</strong>, GDP: $" + Math.round(d["gdp"]);
-        // return "<strong>Country: </strong>" + d.key + "%</span>";
-    });
+     });
 
     svg.call(tip);
 
@@ -332,9 +337,10 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
 
     // set graph and axis titles
     svg.append("text")
-       .attr("x", w/5)
+       .attr("x", w/2)
        .attr("y", start_h)
        .attr("font-weight", "bold")
+       .attr("text-anchor", "middle")
        .text("Teens experiencing violence and teen pregnancies in OECD countries");
 
     svg.append("text")
@@ -349,17 +355,39 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
        .attr("transform", "rotate(-90)")
        .text("Teen pregnancy (%)");
 
-       var colorLegend = d3.legend.color()
-               .labelFormat(d3.format(".0f"))
-               .scale(colorScale)
-               .shapePadding(5)
-               .shapeWidth(50)
-               .shapeHeight(20)
-               .labelOffset(12);
+    // svg.append("select")
+    //    .attr("x", 30)
+    //    .attr("y", 30)
+    //    .option("2012")
+    //    .text("Year")
 
-             svg.append("g")
-               .attr("transform", "translate(352, 60)")
-               .call(colorLegend);
+    // Create a dropdown
+    // var fruitMenu = d3.select("#fruitDropdown")
 
+ 		svg.append("select")
+       .attr("y", 30)
+       .attr("x", 30)
+ 		   .selectAll("option")
+       .data(data)
+       .enter()
+       .append("option")
+       .attr("value", function(d){
+           return d.key;
+       })
+       .text(function(d){
+           return d.key;
+       });
+
+       // var colorLegend = d3.legend.color()
+       //         .labelFormat(d3.format(".0f"))
+       //         .scale(colorScale)
+       //         .shapePadding(5)
+       //         .shapeWidth(50)
+       //         .shapeHeight(20)
+       //         .labelOffset(12);
+       //
+       //       svg.append("g")
+       //         .attr("transform", "translate(352, 60)")
+       //         .call(colorLegend);
 
 }
