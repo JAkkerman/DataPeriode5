@@ -17,24 +17,27 @@ var end_h = 0.85*h;
 var end_y = 50;
 var end_x = 35;
 var barPadding = 2;
-var startyear = 2012;
+var startyear = year = 2012;
 var endyear = 2015;
-var year = 2012;
 var colors = ['#dbd87a', '#a1dab4', '#41b6c4', '#225ea8'];
 
 window.onload = function() {
 
   Promise.all(requests).then(function(response) {
 
+    // get data in JSON format
     var teenViolentData = transformResponse(response[0]);
     var teenPregData = transformResponse(response[1]);
     var dataGDP = transformResponseGDP(response[2]);
 
+    // clean data
     converted_data = convert(teenViolentData, teenPregData, dataGDP);
 
+    // set scales and draw the first graph (for 2012, the first year)
     scales = scale(start_w, end_w, start_h, end_h);
     drawScatter(converted_data, scales[0], scales[1], scales[2], year);
 
+    // allow interaction by letting the user choose the year of data
     document.getElementById("Year").onclick = function() {
       d3.selectAll("svg").remove()
       drawScatter(converted_data, scales[0], scales[1], scales[2], document.getElementById("Year").value);
@@ -52,37 +55,37 @@ function convert(teenViolentData, teenPregData, dataGDP) {
 
   // add years
   for (i = startyear; i < endyear + 1; i++) {
-    converted_data[i] = []
+    converted_data[i] = [];
 
     for (var country in teenViolentData) {
       if (country != 'OECD - Average') {
         // parse teen violence data
-        var teenViol = 0
+        var teenViol = 0;
         teenViolentData[country].forEach(function(d) {
           if (d['Time'] == i) {
-            teenViol = d['Datapoint']
-          }
-        })
+            teenViol = d['Datapoint'];
+          };
+        });
 
         // parse teen pregnancy data
-        var teenPreg = 0
+        var teenPreg = 0;
         if (country in teenPregData) {
           teenPregData[country].forEach(function(d) {
             if (d['Time'] == i) {
-              teenPreg = d['Datapoint']
-            }
-          })
-        }
+              teenPreg = d['Datapoint'];
+            };
+          });
+        };
 
         // parse GDP data
-        var gdp = 0
+        var gdp = 0;
         if (country in dataGDP) {
           dataGDP[country].forEach(function(d) {
             if (d['Year'] == i) {
-              gdp = d['Datapoint']
-            }
-          })
-        }
+              gdp = d['Datapoint'];
+            };
+          });
+        };
 
         // put data into dictionary
         converted_data[i].push({
@@ -90,12 +93,12 @@ function convert(teenViolentData, teenPregData, dataGDP) {
           'teenViol': teenViol,
           'teenPreg': teenPreg,
           'gdp': gdp
-        })
-      }
-    }
-  }
-  return converted_data
-}
+        });
+      };
+    };
+  };
+  return converted_data;
+};
 
 
 function transformResponse(data){
@@ -255,11 +258,7 @@ function scale(start_w, end_w, start_h, end_h) {
                      .domain([20000, 30000, 45000, 60000])
                      .range(colors);
 
-  return [xScale, yScale, colorScale]
-}
-
-function myFunction(){
-  console.log("YEEEEEEt")
+  return [xScale, yScale, colorScale];
 }
 
 function drawScatter(data, xScale, yScale, colorScale, year) {
@@ -283,102 +282,86 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
      .attr("transform", "translate("+ start_w +", "+ start_h +")")
      .call(yAxis);
 
-   // Create a dropdown
-   var dropDown = d3.select("#fruitDropdown");
+  var tip = d3.tip()
+     .attr('class', 'd3-tip')
+     .offset([-10, 0])
+     .html(function(d) {
+       return "<strong>" + d["Country"] + "</strong>, GDP: $" + Math.round(d["gdp"]);
+   });
 
-   svg.append("select")
-      .attr("x", 10)
-      .attr("y", 10)
-      .selectAll("option")
-      .data(data)
-      .enter()
-      .append("option")
-      .attr("value", function(d){
-          return d.key;
-      })
-      .text(function(d){
-          return d.key;
-      });
-
-
-    var tip = d3.tip()
-      .attr('class', 'd3-tip')
-      .offset([-10, 0])
-      .html(function(d) {
-        return "<strong>" + d["Country"] + "</strong>, GDP: $" + Math.round(d["gdp"]);
-     });
-
-    svg.call(tip);
+  svg.call(tip);
 
   // draw the data points
-    svg.selectAll("circle")
-    .data(data[year])
-    .enter()
-    .append("circle")
-    .attr("class", "dot")
-    .attr("cx", function (d) {
-      return xScale(d['teenViol'])
-    })
-    .attr("cy", function(d) {
-      return yScale(d['teenPreg']);
-    })
-    .attr("r", 5)
-    .attr('fill', function(d) {
-      return colorScale(d['gdp'])
-    })
-    .on('mouseover', tip.show)
-    .on('mouseout', tip.hide);
+  svg.selectAll("circle")
+     .data(data[year])
+     .enter()
+     .append("circle")
+     .attr("class", "dot")
+     .attr("cx", function (d) {
+       return xScale(d['teenViol'])
+     })
+     .attr("cy", function(d) {
+       return yScale(d['teenPreg']);
+     })
+     .attr("r", 5)
+     .attr('fill', function(d) {
+       return colorScale(d['gdp'])
+     })
+     .on('mouseover', tip.show)
+     .on('mouseout', tip.hide);
 
-    // set graph and axis titles
+  // set graph title
+  svg.append("text")
+     .attr("x", w/2)
+     .attr("y", start_h)
+     .attr("font-family", "arial")
+     .attr("font-weight", "bold")
+     .attr("text-anchor", "middle")
+     .text("Teens violence and teen pregnancies in OECD countries");
+
+  // set graph description
+  svg.append("text")
+     .attr("x", start_w - 40)
+     .attr("y", 2*start_h - 20)
+     .attr("font-family", "arial")
+     .attr("margin-left", "30px")
+     .text("This graph shows the percentage of teens experiencing violence, teen pregnancies and GDP per capita for OECD countries.");
+
+  // set axis titles
+  svg.append("text")
+     .attr("x", w/2 - 2*start_w)
+     .attr("y", h - start_h)
+     .attr("font-family", "arial")
+     .text("Teens that experience violence (%)");
+
+  svg.append("text")
+     .attr("x", -end_h/2)
+     .attr("y", start_w/2)
+     .attr("text-anchor", "middle")
+     .attr("transform", "rotate(-90)")
+     .attr("font-family", "arial")
+     .text("Teen pregnancy (%)");
+
+  // make legend
+  var categories = ['< 20000', '20000-30000', '30000-40000', '30000-45000', '45000 >'];
+  var leg_y = 130;
+
+  for (i = 0; i < 4; i++) {
+    svg.append("circle")
+       .attr("cx", w - 2*start_w)
+       .attr("cy", leg_y)
+       .attr("r", 5)
+       .style("fill", colors[i]);
+
     svg.append("text")
-       .attr("x", w/2)
-       .attr("y", start_h)
+       .attr("x", w - 2*start_w + 20)
+       .attr("y", leg_y)
+       .text(categories[i])
        .attr("font-family", "arial")
-       .attr("font-weight", "bold")
-       .attr("text-anchor", "middle")
-       .text("Teens violence and teen pregnancies in OECD countries");
+       .style("font-size", "15px")
+       .attr("alignment-baseline","middle");
 
-    svg.append("text")
-      .attr("x", start_w - 40)
-      .attr("y", 2*start_h - 20)
-      .attr("font-family", "arial")
-      .attr("margin-left", "30px")
-      .text("This graph shows the percentage of teens experiencing violence, teen pregnancies and GDP per capita for OECD countries.");
-
-    svg.append("text")
-       .attr("x", w/2 - 2*start_w)
-       .attr("y", h - start_h)
-       .attr("font-family", "arial")
-       .text("Teens that experience violence (%)");
-
-    svg.append("text")
-       .attr("x", -end_h/2)
-       .attr("y", start_w/2)
-       .attr("text-anchor", "middle")
-       .attr("transform", "rotate(-90)")
-       .attr("font-family", "arial")
-       .text("Teen pregnancy (%)");
-
-    // make legend
-    var categories = ['< 20000', '20000-30000', '30000-40000', '30000-45000', '45000 >'];
-    var leg_y = 130
-
-    for (i = 0; i < 4; i++) {
-      svg.append("circle")
-         .attr("cx", w - 2*start_w)
-         .attr("cy", leg_y)
-         .attr("r", 5)
-         .style("fill", colors[i]);
-
-      svg.append("text")
-         .attr("x", w - 2*start_w + 20)
-         .attr("y", leg_y)
-         .text(categories[i])
-         .attr("font-family", "arial")
-         .style("font-size", "15px")
-         .attr("alignment-baseline","middle");
-
-         leg_y = leg_y + 30
-    }
+       leg_y = leg_y + 30
+  }
 
 }
