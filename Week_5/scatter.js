@@ -11,8 +11,8 @@ var requests = [d3.json(teensInViolentArea), d3.json(teenPregnancies), d3.json(d
 var w = 900;
 var h = 550;
 var start_w = 60;
-var end_w = 0.9*w;
-var start_h = 30;
+var end_w = 0.85*w;
+var start_h = 40;
 var end_h = 0.85*h;
 var end_y = 50;
 var end_x = 35;
@@ -20,6 +20,7 @@ var barPadding = 2;
 var startyear = 2012;
 var endyear = 2015;
 var year = 2012;
+var colors = ['#dbd87a', '#a1dab4', '#41b6c4', '#225ea8'];
 
 window.onload = function() {
 
@@ -34,17 +35,10 @@ window.onload = function() {
     scales = scale(start_w, end_w, start_h, end_h);
     drawScatter(converted_data, scales[0], scales[1], scales[2], year);
 
-    // call on drawScatter function with selected year for data
-      // document.getElementById("2013").onclick = function() {
-      //   console.log('Yeet')
-      //   d3.selectAll("svg").remove()
-      //   drawScatter(converted_data, scales[0], scales[1], scales[2], 2013);
-      // };
-
-      document.getElementById("Year").onclick = function() {
-        d3.selectAll("svg").remove()
-        drawScatter(converted_data, scales[0], scales[1], scales[2], document.getElementById("Year").value);
-      };
+    document.getElementById("Year").onclick = function() {
+      d3.selectAll("svg").remove()
+      drawScatter(converted_data, scales[0], scales[1], scales[2], document.getElementById("Year").value);
+    };
 
   }).catch(function(e){
       throw(e);
@@ -258,8 +252,8 @@ function scale(start_w, end_w, start_h, end_h) {
                  .range([start_h, end_h - start_h]);
 
   var colorScale = d3.scaleThreshold()
-                     .domain([10000, 25000, 40000, 50000])
-                     .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+                     .domain([20000, 30000, 45000, 60000])
+                     .range(colors);
 
   return [xScale, yScale, colorScale]
 }
@@ -317,7 +311,7 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
     svg.call(tip);
 
   // draw the data points
-   svg.selectAll("circle")
+    svg.selectAll("circle")
     .data(data[year])
     .enter()
     .append("circle")
@@ -339,13 +333,22 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
     svg.append("text")
        .attr("x", w/2)
        .attr("y", start_h)
+       .attr("font-family", "arial")
        .attr("font-weight", "bold")
        .attr("text-anchor", "middle")
-       .text("Teens experiencing violence and teen pregnancies in OECD countries");
+       .text("Teens violence and teen pregnancies in OECD countries");
+
+    svg.append("text")
+      .attr("x", start_w - 40)
+      .attr("y", 2*start_h - 20)
+      .attr("font-family", "arial")
+      .attr("margin-left", "30px")
+      .text("This graph shows the percentage of teens experiencing violence, teen pregnancies and GDP per capita for OECD countries.");
 
     svg.append("text")
        .attr("x", w/2 - 2*start_w)
        .attr("y", h - start_h)
+       .attr("font-family", "arial")
        .text("Teens that experience violence (%)");
 
     svg.append("text")
@@ -353,41 +356,29 @@ function drawScatter(data, xScale, yScale, colorScale, year) {
        .attr("y", start_w/2)
        .attr("text-anchor", "middle")
        .attr("transform", "rotate(-90)")
+       .attr("font-family", "arial")
        .text("Teen pregnancy (%)");
 
-    // svg.append("select")
-    //    .attr("x", 30)
-    //    .attr("y", 30)
-    //    .option("2012")
-    //    .text("Year")
+    // make legend
+    var categories = ['< 20000', '20000-30000', '30000-40000', '30000-45000', '45000 >'];
+    var leg_y = 130
 
-    // Create a dropdown
-    // var fruitMenu = d3.select("#fruitDropdown")
+    for (i = 0; i < 4; i++) {
+      svg.append("circle")
+         .attr("cx", w - 2*start_w)
+         .attr("cy", leg_y)
+         .attr("r", 5)
+         .style("fill", colors[i]);
 
- 		svg.append("select")
-       .attr("y", 30)
-       .attr("x", 30)
- 		   .selectAll("option")
-       .data(data)
-       .enter()
-       .append("option")
-       .attr("value", function(d){
-           return d.key;
-       })
-       .text(function(d){
-           return d.key;
-       });
+      svg.append("text")
+         .attr("x", w - 2*start_w + 20)
+         .attr("y", leg_y)
+         .text(categories[i])
+         .attr("font-family", "arial")
+         .style("font-size", "15px")
+         .attr("alignment-baseline","middle");
 
-       // var colorLegend = d3.legend.color()
-       //         .labelFormat(d3.format(".0f"))
-       //         .scale(colorScale)
-       //         .shapePadding(5)
-       //         .shapeWidth(50)
-       //         .shapeHeight(20)
-       //         .labelOffset(12);
-       //
-       //       svg.append("g")
-       //         .attr("transform", "translate(352, 60)")
-       //         .call(colorLegend);
+         leg_y = leg_y + 30
+    }
 
 }
