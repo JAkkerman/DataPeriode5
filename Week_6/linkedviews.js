@@ -13,8 +13,7 @@ var barPadding = 2;
 
 d3v5.json('data.json').then(function(data){
 
-  // console.log(data['OECD'])
-  drawBarChart(data['OECD'])
+  drawBarChart(['OECD', data['OECD']])
 
   addFillKey(data)
 
@@ -42,13 +41,8 @@ d3v5.json('data.json').then(function(data){
     done: function(datamap) {
         datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
           if (typeof(data[geography.id]) != 'undefined') {
-            // console.log(data[geography.id])
-            for (var year in data[geography.id]) {
-              // console.log(data[geography.id][year]['YEAR'])
-            }
-            // console.log(data[geography.id]);
             d3v5.selectAll(".barChart").remove()
-            drawBarChart(data[geography.id]);
+            drawBarChart([geography.properties.name, data[geography.id]]);
           }
         });
     }
@@ -56,12 +50,14 @@ d3v5.json('data.json').then(function(data){
 
 })
 
-function drawBarChart(countrydata) {
-  // console.log(countrydata);
+function drawBarChart([name, countrydata]) {
 
-  // countrydata.forEach(function(data){
-  //   console.log(data['VALUE'])
-  // })
+  var tip = d3v5.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0])
+    .html(function(d) {
+      return "Renewable Energy in "+ d["YEAR"] +": <strong>" + d["VALUE"] + "</strong> %</span>";
+  });
 
   var svg = d3v5.select("body")
     .append("svg")
@@ -95,7 +91,6 @@ function drawBarChart(countrydata) {
       else {
         value = d["VALUE"]
       }
-      console.log(start_h + yScale(value))
       return start_h + yScale(value);
     })
     .attr("width", (end_w - start_w) / countrydata.length - barPadding)
@@ -126,7 +121,11 @@ function drawBarChart(countrydata) {
         else {
           return "rgb(162, 106, 75)";
         }
-    });
+      })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+  svg.call(tip);
 
   // draw both axes
   svg.append("g")
@@ -149,6 +148,11 @@ function drawBarChart(countrydata) {
       .attr("text-anchor", "middle")
       .attr("transform", "rotate(-90)")
       .text("Percentage renewable energy");
+
+      svg.append("text")
+         .attr("x", w/2 - start_w)
+         .attr("y", start_h + 5)
+         .text(name);
 
 }
 
@@ -173,6 +177,5 @@ function addFillKey(data) {
         }
       }
     })
-    // console.log(data)
   }
 }

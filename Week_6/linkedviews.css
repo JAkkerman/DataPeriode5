@@ -1,3 +1,17 @@
 /* Joos Akkerman (11304723)
 Data Processing Week 6
 This file visualizes two graphs that are linked */
+
+.bar:hover {
+  fill: rgb(45, 102, 38)
+}
+
+.d3-tip {
+  line-height: 1;
+  padding: 12px;
+  background: rgb(92, 221, 56);
+  color: #fff;
+  border-radius: 1px;
+  font-family: arial;
+  font-size: 10px;
+}
