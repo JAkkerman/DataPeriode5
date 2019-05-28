@@ -21,18 +21,19 @@ def clean(input, firstcolumn, lastcolumn):
     """
 
     input = pd.read_csv(INPUT_CSV, keep_default_na=False)
-    data = []
     countries = {}
+    # for row in range(2109, 4218):
+    #     countries[input.loc[row, 'LOCATION']] = {}
+    #
+    # for row in range(2109, 4218):
+    #     countries[input.loc[row, 'LOCATION']][int(input.loc[row, 'TIME'])] = {'YEAR': int(input.loc[row, 'TIME']), "VALUE": input.loc[row, 'Value']}
     for row in range(2109, 4218):
-        countries[input.loc[row, 'LOCATION']] = {}
+        countries[input.loc[row, 'LOCATION']] = []
 
     for row in range(2109, 4218):
-        value = input.loc[row, 'Value']
-        countries[input.loc[row, 'LOCATION']][int(input.loc[row, 'TIME'])] = value
+        countries[input.loc[row, 'LOCATION']].append({'YEAR': int(input.loc[row, 'TIME']), "VALUE": input.loc[row, 'Value']})
 
-    data.append(countries)
-
-    return data
+    return countries
 
 
 def convert(data, outputJSON):
@@ -45,7 +46,7 @@ def convert(data, outputJSON):
 
 
 if __name__ == '__main__':
-    
+
     # read data from data file
     data = clean(INPUT_CSV, FIRSTCOLUMN, LASTCOLUMN)
 

@@ -13,12 +13,14 @@ var barPadding = 2;
 
 d3v5.json('data.json').then(function(data){
 
+  console.log(data['OECD'])
   drawBarChart(data['OECD'])
 
-  addFillKey(data);
+  addFillKey(data)
 
   var map = new Datamap({
     element: document.getElementById("map"),
+    data: data,
     fills: {
       good: 'rgb(0, 252, 1)',
       decent: 'rgb(178, 254, 1)',
@@ -27,16 +29,24 @@ d3v5.json('data.json').then(function(data){
       bad: 'rgb(162, 106, 75)',
       defaultFill: '#b0b3b7',
     },
-    data: data,
     geographyConfig: {
       popupTemplate: function(geography, data) {
-        return ["<div class='hoverinfo'>", geography.properties.name,': ', data['2016'], "</div>"].join('');
-      }
+        data.forEach(function(element) {
+          if (element['YEAR'] == 2016) {
+            value = element['VALUE']
+          }
+        })
+        return ["<div class='hoverinfo'>", geography.properties.name,': ', value, "</div>"].join('');
+      },
     },
     done: function(datamap) {
         datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
           if (typeof(data[geography.id]) != 'undefined') {
-            console.log(data[geography.id]);
+            // console.log(data[geography.id])
+            for (var year in data[geography.id]) {
+              // console.log(data[geography.id][year]['YEAR'])
+            }
+            // console.log(data[geography.id]);
             d3v5.selectAll(".barChart").remove()
             drawBarChart(data[geography.id]);
           }
@@ -47,6 +57,12 @@ d3v5.json('data.json').then(function(data){
 })
 
 function drawBarChart(countrydata) {
+  console.log(countrydata);
+
+  countrydata.forEach(function(data){
+    console.log(data['VALUE'])
+  })
+
   var svg = d3v5.select("body")
     .append("svg")
     .attr("class", "barChart")
@@ -66,6 +82,28 @@ function drawBarChart(countrydata) {
   // initiate x-axis and y-axis
   var xAxis = d3v5.axisBottom(xScale);
   var yAxis = d3v5.axisLeft(yScale);
+
+  svg.selectAll("rect")
+    .data(countrydata)
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("y", function(d) {
+      if (d["VALUE"] == 'undefined') {
+        value = start_h
+      }
+      else {
+        value = d["VALUE"] + start_h
+      }
+      return start_h + yScale(value);
+    })
+    .attr("width", (end_w - start_w) / countrydata.length - barPadding)
+    .attr("height", function(d) {
+        return end_h - start_h - yScale(value);
+    })
+    .attr("x", function(d, i) {
+        return start_w + i * ((end_w - start_w) / countrydata.length);
+    });
 
   // draw both axes
   svg.append("g")
@@ -91,25 +129,27 @@ function drawBarChart(countrydata) {
 
 }
 
-
-
 function addFillKey(data) {
-  for (var datum in data) {
-    data[datum].fillKey = 'dataPresent'
-    if (data[datum]['2016'] > 60) {
-      data[datum].fillKey = 'good';
-    }
-    else if (data[datum]['2016'] > 30) {
-      data[datum].fillKey = 'decent';
-    }
-    else if (data[datum]['2016']> 15) {
-      data[datum].fillKey = 'acceptable';
-    }
-    else if (data[datum]['2016'] > 7) {
-      data[datum].fillKey = 'not_good';
-    }
-    else {
-      data[datum].fillKey = 'bad';
-    }
+  for (datum in data){
+    data[datum].forEach(function(element) {
+      if (element['YEAR'] == 2016) {
+        if (element["VALUE"] > 60) {
+          data[datum].fillKey = 'good';
+        }
+        else if (element["VALUE"] > 30) {
+          data[datum].fillKey = 'decent';
+        }
+        else if (element['VALUE'] > 15) {
+          data[datum].fillKey = 'acceptable';
+        }
+        else if (element['VALUE'] > 7) {
+          data[datum].fillKey = 'not_good';
+        }
+        else {
+          data[datum].fillKey = 'bad';
+        }
+      }
+    })
+    // console.log(data)
   }
 }
