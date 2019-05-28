@@ -13,10 +13,13 @@ var barPadding = 2;
 
 d3v5.json('data.json').then(function(data){
 
+  // draw bar chart of average OECD data
   drawBarChart(['OECD', data['OECD']])
 
+  // determine colors of countries, based on degree of sustainable energy
   addFillKey(data)
 
+  // draw map
   var map = new Datamap({
     element: document.getElementById("map"),
     data: data,
@@ -30,16 +33,18 @@ d3v5.json('data.json').then(function(data){
     },
     geographyConfig: {
       popupTemplate: function(geography, data) {
+        // show country name and sustainability value when hovering
         data.forEach(function(element) {
           if (element['YEAR'] == 2016) {
-            value = element['VALUE']
+              value = element['VALUE']
           }
         })
-        return ["<div class='hoverinfo'>", geography.properties.name,': ', value, "</div>"].join('');
+        return ["<div class='hoverinfo'>", geography.id,': ', value, "</div>"].join('');
       },
     },
     done: function(datamap) {
         datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
+          // draw bar chart if user clicks on country
           if (typeof(data[geography.id]) != 'undefined') {
             d3v5.selectAll(".barChart").remove()
             drawBarChart([geography.properties.name, data[geography.id]]);
@@ -51,7 +56,9 @@ d3v5.json('data.json').then(function(data){
 })
 
 function drawBarChart([name, countrydata]) {
+  // draws bar chart of selected country
 
+  // allows hover over individual bars and shows values
   var tip = d3v5.tip()
     .attr('class', 'd3-tip')
     .offset([-10, 0])
@@ -59,6 +66,7 @@ function drawBarChart([name, countrydata]) {
       return "Renewable Energy in "+ d["YEAR"] +": <strong>" + d["VALUE"] + "</strong> %</span>";
   });
 
+  // appends svg of bar chart
   var svg = d3v5.select("body")
     .append("svg")
     .attr("class", "barChart")
@@ -66,8 +74,8 @@ function drawBarChart([name, countrydata]) {
     .attr("height", h);
 
   // sets the country names on the x-axis
-  var xScale = d3v5.scaleBand()
-                 .domain([1960, 2016])
+  var xScale = d3v5.scaleTime()
+                 .domain([new Date(1960, 0, 1), new Date(2016, 0, 1)])
                  .range([start_w, end_w]);
 
   // sets the scale for the y-axis
@@ -79,19 +87,14 @@ function drawBarChart([name, countrydata]) {
   var xAxis = d3v5.axisBottom(xScale);
   var yAxis = d3v5.axisLeft(yScale);
 
+  // draws bar for each year in data set
   svg.selectAll("rect")
     .data(countrydata)
     .enter()
     .append("rect")
     .attr("class", "bar")
     .attr("y", function(d) {
-      if (d["VALUE"] == 'undefined') {
-        value = 0
-      }
-      else {
-        value = d["VALUE"]
-      }
-      return start_h + yScale(value);
+      return start_h + yScale(d["VALUE"]);
     })
     .attr("width", (end_w - start_w) / countrydata.length - barPadding)
     .attr("height", function(d) {
@@ -136,7 +139,7 @@ function drawBarChart([name, countrydata]) {
      .attr("transform", "translate("+ start_w +", "+ start_h +")")
      .call(yAxis);
 
-   // set axis titles
+   // set axis titles and title of bar chart, which is the name of the country
    svg.append("text")
       .attr("x", w/2 - start_w)
       .attr("y", h)
@@ -149,14 +152,16 @@ function drawBarChart([name, countrydata]) {
       .attr("transform", "rotate(-90)")
       .text("Percentage renewable energy");
 
-      svg.append("text")
-         .attr("x", w/2 - start_w)
-         .attr("y", start_h + 5)
-         .text(name);
+    svg.append("text")
+       .attr("x", w/2 - start_w)
+       .attr("y", start_h + 5)
+       .text(name);
 
 }
 
 function addFillKey(data) {
+  // adds color to countries based on their level of sustainability
+
   for (datum in data){
     data[datum].forEach(function(element) {
       if (element['YEAR'] == 2016) {
@@ -174,8 +179,8 @@ function addFillKey(data) {
         }
         else {
           data[datum].fillKey = 'bad';
-        }
-      }
-    })
-  }
-}
+        };
+      };
+    });
+  };
+};
