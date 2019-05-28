@@ -13,7 +13,7 @@ var barPadding = 2;
 
 d3v5.json('data.json').then(function(data){
 
-  console.log(data['OECD'])
+  // console.log(data['OECD'])
   drawBarChart(data['OECD'])
 
   addFillKey(data)
@@ -57,11 +57,11 @@ d3v5.json('data.json').then(function(data){
 })
 
 function drawBarChart(countrydata) {
-  console.log(countrydata);
+  // console.log(countrydata);
 
-  countrydata.forEach(function(data){
-    console.log(data['VALUE'])
-  })
+  // countrydata.forEach(function(data){
+  //   console.log(data['VALUE'])
+  // })
 
   var svg = d3v5.select("body")
     .append("svg")
@@ -90,19 +90,42 @@ function drawBarChart(countrydata) {
     .attr("class", "bar")
     .attr("y", function(d) {
       if (d["VALUE"] == 'undefined') {
-        value = start_h
+        value = 0
       }
       else {
-        value = d["VALUE"] + start_h
+        value = d["VALUE"]
       }
+      console.log(start_h + yScale(value))
       return start_h + yScale(value);
     })
     .attr("width", (end_w - start_w) / countrydata.length - barPadding)
     .attr("height", function(d) {
-        return end_h - start_h - yScale(value);
+        if (d["VALUE"] == 'undefined') {
+          return 0;
+        }
+        else {
+          return end_h - start_h - yScale(d["VALUE"]);
+        }
     })
     .attr("x", function(d, i) {
         return start_w + i * ((end_w - start_w) / countrydata.length);
+    })
+    .attr("fill", function(d) {
+        if (d["VALUE"] > 60) {
+          return "rgb(0, 252, 1)";
+        }
+        else if (d["VALUE"] > 30) {
+           return "rgb(178, 254, 1)";
+        }
+        else if (d["VALUE"] > 15) {
+          return "rgb(176, 252, 99)";
+        }
+        else if (d["VALUE"] > 7) {
+          return "rgb(231, 252, 99)";
+        }
+        else {
+          return "rgb(162, 106, 75)";
+        }
     });
 
   // draw both axes
