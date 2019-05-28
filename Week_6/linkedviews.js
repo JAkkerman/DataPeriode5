@@ -3,13 +3,15 @@
 // This file visualizes two graphs that are linked
 
 // set properties of barchart, scalable to w (width) and h (height)
-var w = 750;
-var h = 350;
+var w = 850;
+var h = 230;
 var start_w = 60;
-var end_w = 0.9*w;
+var end_w = 0.83*w;
 var start_h = 10;
 var end_h = 0.85*h;
 var barPadding = 2;
+var colors = ["rgb(0, 252, 1)", "rgb(178, 254, 1)", "rgb(176, 252, 99)", "rgb(231, 252, 99)", "rgb(162, 106, 75)"];
+var categories = ['60% >', '30% - 59%', '15% - 30%', '7% - 15%', '< 7%'];
 
 d3v5.json('data.json').then(function(data){
 
@@ -109,16 +111,16 @@ function drawBarChart([name, countrydata]) {
         return start_w + i * ((end_w - start_w) / countrydata.length);
     })
     .attr("fill", function(d) {
-        if (d["VALUE"] > 60) {
+        if (d["VALUE"] >= 60) {
           return "rgb(0, 252, 1)";
         }
-        else if (d["VALUE"] > 30) {
+        else if (d["VALUE"] >= 30) {
            return "rgb(178, 254, 1)";
         }
-        else if (d["VALUE"] > 15) {
+        else if (d["VALUE"] >= 15) {
           return "rgb(176, 252, 99)";
         }
-        else if (d["VALUE"] > 7) {
+        else if (d["VALUE"] >= 7) {
           return "rgb(231, 252, 99)";
         }
         else {
@@ -141,8 +143,10 @@ function drawBarChart([name, countrydata]) {
 
    // set axis titles and title of bar chart, which is the name of the country
    svg.append("text")
-      .attr("x", w/2 - start_w)
+      .attr("x", start_w + end_w/2)
       .attr("y", h)
+      .attr("text-anchor", "middle")
+      .attr("font-family", "arial")
       .text("Years");
 
    svg.append("text")
@@ -150,12 +154,43 @@ function drawBarChart([name, countrydata]) {
       .attr("y", start_w/2)
       .attr("text-anchor", "middle")
       .attr("transform", "rotate(-90)")
+      .attr("font-family", "arial")
+      .style("font-size", "13px")
       .text("Percentage renewable energy");
 
     svg.append("text")
-       .attr("x", w/2 - start_w)
+       .attr("x", w/2)
        .attr("y", start_h + 5)
-       .text(name);
+       .attr("text-anchor", "middle")
+       .attr("font-family", "arial")
+       .text('Development over the years for '+ name);
+
+     // make legend
+     svg.append("text")
+        .attr("x", w - 2.1*start_w)
+        .attr("y", leg_y - 20)
+        .attr("font-family", "arial")
+        .style("font-size", "15px")
+        .text('Legend:');
+
+     var leg_y = 0.2*h;
+     for (i = 0; i < colors.length; i++) {
+       svg.append("circle")
+          .attr("cx", w - 2*start_w)
+          .attr("cy", leg_y)
+          .attr("r", 5)
+          .style("fill", colors[i]);
+
+       svg.append("text")
+          .attr("x", w - 2*start_w + 20)
+          .attr("y", leg_y)
+          .text(categories[i])
+          .attr("font-family", "arial")
+          .style("font-size", "15px")
+          .attr("alignment-baseline","middle");
+
+          leg_y = leg_y + 30
+     }
 
 }
 
