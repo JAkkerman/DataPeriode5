@@ -4,7 +4,7 @@
 
 // set properties of barchart, scalable to w (width) and h (height)
 var w = 850;
-var h = 230;
+var h = 210;
 var start_w = 60;
 var end_w = 0.83*w;
 var start_h = 10;
