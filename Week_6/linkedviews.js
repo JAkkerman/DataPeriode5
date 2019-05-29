@@ -4,7 +4,7 @@
 
 // set properties of barchart, scalable to w (width) and h (height)
 var w = 850;
-var h = 210;
+var h = 214;
 var start_w = 60;
 var end_w = 0.83*w;
 var start_h = 10;
@@ -22,6 +22,12 @@ d3v5.json('data.json').then(function(data){
   addFillKey(data)
 
   // draw map
+  drawMap(data)
+});
+
+function drawMap(data) {
+  // draws map
+
   var map = new Datamap({
     element: document.getElementById("map"),
     data: data,
@@ -54,8 +60,7 @@ d3v5.json('data.json').then(function(data){
         });
     }
   });
-
-})
+};
 
 function drawBarChart([name, countrydata]) {
   // draws bar chart of selected country
@@ -77,13 +82,13 @@ function drawBarChart([name, countrydata]) {
 
   // sets the country names on the x-axis
   var xScale = d3v5.scaleTime()
-                 .domain([new Date(1960, 0, 1), new Date(2016, 0, 1)])
-                 .range([start_w, end_w]);
+                   .domain([new Date(1960, 0, 1), new Date(2016, 0, 1)])
+                   .range([start_w, end_w]);
 
   // sets the scale for the y-axis
   var yScale = d3v5.scaleLinear()
-                 .domain([100, 0])
-                 .range([start_h, end_h - start_h]);
+                   .domain([100, 0])
+                   .range([start_h, end_h - start_h]);
 
   // initiate x-axis and y-axis
   var xAxis = d3v5.axisBottom(xScale);
@@ -91,44 +96,44 @@ function drawBarChart([name, countrydata]) {
 
   // draws bar for each year in data set
   svg.selectAll("rect")
-    .data(countrydata)
-    .enter()
-    .append("rect")
-    .attr("class", "bar")
-    .attr("y", function(d) {
-      return start_h + yScale(d["VALUE"]);
-    })
-    .attr("width", (end_w - start_w) / countrydata.length - barPadding)
-    .attr("height", function(d) {
-        if (d["VALUE"] == 'undefined') {
+     .data(countrydata)
+     .enter()
+     .append("rect")
+     .attr("class", "bar")
+     .attr("y", function(d) {
+       return start_h + yScale(d["VALUE"]);
+     })
+     .attr("width", (end_w - start_w) / countrydata.length - barPadding)
+     .attr("height", function(d) {
+         if (d["VALUE"] == 'undefined') {
           return 0;
-        }
-        else {
-          return end_h - start_h - yScale(d["VALUE"]);
-        }
-    })
-    .attr("x", function(d, i) {
-        return start_w + i * ((end_w - start_w) / countrydata.length);
-    })
-    .attr("fill", function(d) {
-        if (d["VALUE"] >= 60) {
-          return "rgb(0, 252, 1)";
-        }
-        else if (d["VALUE"] >= 30) {
-           return "rgb(178, 254, 1)";
-        }
-        else if (d["VALUE"] >= 15) {
-          return "rgb(176, 252, 99)";
-        }
-        else if (d["VALUE"] >= 7) {
-          return "rgb(231, 252, 99)";
-        }
-        else {
-          return "rgb(162, 106, 75)";
-        }
-      })
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide);
+         }
+         else {
+           return end_h - start_h - yScale(d["VALUE"]);
+         }
+     })
+     .attr("x", function(d, i) {
+         return start_w + i * ((end_w - start_w) / countrydata.length);
+     })
+     .attr("fill", function(d) {
+         if (d["VALUE"] >= 60) {
+           return "rgb(0, 252, 1)";
+         }
+         else if (d["VALUE"] >= 30) {
+            return "rgb(178, 254, 1)";
+         }
+         else if (d["VALUE"] >= 15) {
+           return "rgb(176, 252, 99)";
+         }
+         else if (d["VALUE"] >= 7) {
+           return "rgb(231, 252, 99)";
+         }
+         else {
+           return "rgb(162, 106, 75)";
+         }
+       })
+    .on('mouseover', tip.show)
+    .on('mouseout', tip.hide);
 
   svg.call(tip);
 
@@ -141,58 +146,57 @@ function drawBarChart([name, countrydata]) {
      .attr("transform", "translate("+ start_w +", "+ start_h +")")
      .call(yAxis);
 
-   // set axis titles and title of bar chart, which is the name of the country
-   svg.append("text")
-      .attr("x", start_w + end_w/2)
-      .attr("y", h)
-      .attr("text-anchor", "middle")
-      .attr("font-family", "arial")
-      .text("Years");
+  // set axis titles and title of bar chart, which is the name of the country
+  svg.append("text")
+     .attr("x", start_w + end_w/2)
+     .attr("y", h)
+     .attr("text-anchor", "middle")
+     .attr("font-family", "arial")
+     .text("Years");
+
+  svg.append("text")
+     .attr("x", -end_h/2)
+     .attr("y", start_w/2)
+     .attr("text-anchor", "middle")
+     .attr("transform", "rotate(-90)")
+     .attr("font-family", "arial")
+     .style("font-size", "13px")
+     .text("Percentage renewable energy");
+
+  svg.append("text")
+     .attr("x", w/2)
+     .attr("y", start_h + 5)
+     .attr("text-anchor", "middle")
+     .attr("font-family", "arial")
+     .text('Development over the years for '+ name);
+
+  // make legend
+  var leg_y = 0.2*h;
+  svg.append("text")
+     .attr("x", w - 2.1*start_w)
+     .attr("y", leg_y - 20)
+     .attr("font-family", "arial")
+     .style("font-size", "15px")
+     .text('Legend:');
+
+  for (i = 0; i < colors.length; i++) {
+   svg.append("circle")
+      .attr("cx", w - 2*start_w)
+      .attr("cy", leg_y)
+      .attr("r", 5)
+      .style("fill", colors[i]);
 
    svg.append("text")
-      .attr("x", -end_h/2)
-      .attr("y", start_w/2)
-      .attr("text-anchor", "middle")
-      .attr("transform", "rotate(-90)")
+      .attr("x", w - 2*start_w + 20)
+      .attr("y", leg_y)
+      .text(categories[i])
       .attr("font-family", "arial")
-      .style("font-size", "13px")
-      .text("Percentage renewable energy");
+      .style("font-size", "15px")
+      .attr("alignment-baseline","middle");
 
-    svg.append("text")
-       .attr("x", w/2)
-       .attr("y", start_h + 5)
-       .attr("text-anchor", "middle")
-       .attr("font-family", "arial")
-       .text('Development over the years for '+ name);
-
-     // make legend
-     svg.append("text")
-        .attr("x", w - 2.1*start_w)
-        .attr("y", leg_y - 20)
-        .attr("font-family", "arial")
-        .style("font-size", "15px")
-        .text('Legend:');
-
-     var leg_y = 0.2*h;
-     for (i = 0; i < colors.length; i++) {
-       svg.append("circle")
-          .attr("cx", w - 2*start_w)
-          .attr("cy", leg_y)
-          .attr("r", 5)
-          .style("fill", colors[i]);
-
-       svg.append("text")
-          .attr("x", w - 2*start_w + 20)
-          .attr("y", leg_y)
-          .text(categories[i])
-          .attr("font-family", "arial")
-          .style("font-size", "15px")
-          .attr("alignment-baseline","middle");
-
-          leg_y = leg_y + 30
-     }
-
-}
+      leg_y = leg_y + 30
+  };
+};
 
 function addFillKey(data) {
   // adds color to countries based on their level of sustainability
