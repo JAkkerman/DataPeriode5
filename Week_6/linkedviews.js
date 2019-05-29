@@ -54,7 +54,7 @@ function drawMap(data) {
               value = element['VALUE'];
           }
         })
-        return ["<div class='hoverinfo'>", geography.id,': ', value, "</div>"].join('');
+        return ["<div class='hoverinfo'>", geography.properties.name,': ', value, "</div>"].join('');
       },
     },
     done: function(datamap) {
