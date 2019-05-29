@@ -10,20 +10,27 @@ var end_w = 0.83*w;
 var start_h = 10;
 var end_h = 0.85*h;
 var barPadding = 2;
+
+// set scale of time and used colors for degree of sustainability
+var firstYear = 1960;
+var lastYear = 2016;
 var colors = ["rgb(0, 252, 1)", "rgb(178, 254, 1)", "rgb(176, 252, 99)", "rgb(231, 252, 99)", "rgb(162, 106, 75)"];
-var categories = ['60% >', '30% - 59%', '15% - 30%', '7% - 15%', '< 7%'];
+var categories_legend = ['60% >', '30% - 59%', '15% - 30%', '7% - 15%', '< 7%'];
+var categories = {'good': 60, 'decent': 30, 'acceptable': 15, 'not_good': 7};
+
 
 d3v5.json('data.json').then(function(data){
 
   // draw bar chart of average OECD data
-  drawBarChart(['OECD', data['OECD']])
+  drawBarChart(['OECD', data['OECD']]);
 
   // determine colors of countries, based on degree of sustainable energy
-  addFillKey(data)
+  addFillKey(data);
 
   // draw map
-  drawMap(data)
+  drawMap(data);
 });
+
 
 function drawMap(data) {
   // draws map
@@ -43,8 +50,8 @@ function drawMap(data) {
       popupTemplate: function(geography, data) {
         // show country name and sustainability value when hovering
         data.forEach(function(element) {
-          if (element['YEAR'] == 2016) {
-              value = element['VALUE']
+          if (element['YEAR'] == lastYear) {
+              value = element['VALUE'];
           }
         })
         return ["<div class='hoverinfo'>", geography.id,': ', value, "</div>"].join('');
@@ -54,7 +61,7 @@ function drawMap(data) {
         datamap.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
           // draw bar chart if user clicks on country
           if (typeof(data[geography.id]) != 'undefined') {
-            d3v5.selectAll(".barChart").remove()
+            d3v5.selectAll(".barChart").remove();
             drawBarChart([geography.properties.name, data[geography.id]]);
           }
         });
@@ -62,27 +69,28 @@ function drawMap(data) {
   });
 };
 
+
 function drawBarChart([name, countrydata]) {
   // draws bar chart of selected country
 
   // allows hover over individual bars and shows values
   var tip = d3v5.tip()
-    .attr('class', 'd3-tip')
-    .offset([-10, 0])
-    .html(function(d) {
-      return "Renewable Energy in "+ d["YEAR"] +": <strong>" + d["VALUE"] + "</strong> %</span>";
-  });
+                .attr('class', 'd3-tip')
+                .offset([-10, 0])
+                .html(function(d) {
+                  return "Renewable Energy in "+ d["YEAR"] +": <strong>" + d["VALUE"] + "</strong> %</span>";
+                });
 
   // appends svg of bar chart
   var svg = d3v5.select("body")
-    .append("svg")
-    .attr("class", "barChart")
-    .attr("width", w)
-    .attr("height", h);
+                .append("svg")
+                .attr("class", "barChart")
+                .attr("width", w)
+                .attr("height", h);
 
   // sets the country names on the x-axis
   var xScale = d3v5.scaleTime()
-                   .domain([new Date(1960, 0, 1), new Date(2016, 0, 1)])
+                   .domain([new Date(firstYear, 0, 1), new Date(lastYear, 0, 1)])
                    .range([start_w, end_w]);
 
   // sets the scale for the y-axis
@@ -101,37 +109,37 @@ function drawBarChart([name, countrydata]) {
      .append("rect")
      .attr("class", "bar")
      .attr("y", function(d) {
-       return start_h + yScale(d["VALUE"]);
+        return start_h + yScale(d["VALUE"]);
      })
      .attr("width", (end_w - start_w) / countrydata.length - barPadding)
      .attr("height", function(d) {
-         if (d["VALUE"] == 'undefined') {
+        if (d["VALUE"] == 'undefined') {
           return 0;
-         }
-         else {
-           return end_h - start_h - yScale(d["VALUE"]);
-         }
+        }
+        else {
+          return end_h - start_h - yScale(d["VALUE"]);
+        }
      })
      .attr("x", function(d, i) {
-         return start_w + i * ((end_w - start_w) / countrydata.length);
+        return start_w + i * ((end_w - start_w) / countrydata.length);
      })
      .attr("fill", function(d) {
-         if (d["VALUE"] >= 60) {
-           return "rgb(0, 252, 1)";
-         }
-         else if (d["VALUE"] >= 30) {
-            return "rgb(178, 254, 1)";
-         }
-         else if (d["VALUE"] >= 15) {
-           return "rgb(176, 252, 99)";
-         }
-         else if (d["VALUE"] >= 7) {
-           return "rgb(231, 252, 99)";
-         }
-         else {
-           return "rgb(162, 106, 75)";
-         }
-       })
+        if (d["VALUE"] >= categories['good']) {
+         return "rgb(0, 252, 1)";
+        }
+        else if (d["VALUE"] >= categories['decent']) {
+          return "rgb(178, 254, 1)";
+        }
+        else if (d["VALUE"] >= categories['acceptable']) {
+         return "rgb(176, 252, 99)";
+        }
+        else if (d["VALUE"] >= categories['not_good']) {
+         return "rgb(231, 252, 99)";
+        }
+        else {
+         return "rgb(162, 106, 75)";
+        }
+        })
     .on('mouseover', tip.show)
     .on('mouseout', tip.hide);
 
@@ -189,31 +197,32 @@ function drawBarChart([name, countrydata]) {
    svg.append("text")
       .attr("x", w - 2*start_w + 20)
       .attr("y", leg_y)
-      .text(categories[i])
+      .text(categories_legend[i])
       .attr("font-family", "arial")
       .style("font-size", "15px")
       .attr("alignment-baseline","middle");
 
-      leg_y = leg_y + 30
+      leg_y = leg_y + 30;
   };
 };
+
 
 function addFillKey(data) {
   // adds color to countries based on their level of sustainability
 
   for (datum in data){
     data[datum].forEach(function(element) {
-      if (element['YEAR'] == 2016) {
-        if (element["VALUE"] > 60) {
+      if (element['YEAR'] == lastYear) {
+        if (element["VALUE"] > categories['good']) {
           data[datum].fillKey = 'good';
         }
-        else if (element["VALUE"] > 30) {
+        else if (element["VALUE"] > categories['decent']) {
           data[datum].fillKey = 'decent';
         }
-        else if (element['VALUE'] > 15) {
+        else if (element['VALUE'] > categories['acceptable']) {
           data[datum].fillKey = 'acceptable';
         }
-        else if (element['VALUE'] > 7) {
+        else if (element['VALUE'] > categories['not_good']) {
           data[datum].fillKey = 'not_good';
         }
         else {
